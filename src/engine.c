@@ -1,4 +1,7 @@
 #include "engine.h"
+#include "DataStructures/Vector2f.h"
+
+void draw(SDL_Renderer *renderer);
 
 void run() {
     // Initialize SDL
@@ -26,9 +29,11 @@ void run() {
         }
 
         // Clear screen
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
         // Draw
+        draw(renderer);
 
         // Show what was drawn
         SDL_RenderPresent(renderer);
@@ -38,4 +43,18 @@ void run() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void draw(SDL_Renderer *renderer) {
+    struct Vector2f p1;
+    p1.x = 0;
+    p1.y = 0;
+
+    struct Vector2f p2;
+    p1.x = 50;
+    p1.y = 0;
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+    SDL_RenderDrawLine(renderer, 0, 0, 50, 50);
 }

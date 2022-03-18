@@ -7,5 +7,5 @@ set(CMAKE_C_STANDARD 99)
 find_package(SDL2 REQUIRED)
 include_directories(C_test ${SDL2_INCLUDE_DIRS})
 
-add_executable(C_test src/main.c src/engine.c src/engine.h)
+add_executable(C_test src/main.c src/engine.c src/engine.h src/DataStructures/Vector2f.h)
 target_link_libraries(C_test ${SDL2_LIBRARIES})
