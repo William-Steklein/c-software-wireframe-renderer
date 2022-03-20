@@ -14,17 +14,16 @@ void printFigure(Figure *figure) {
     printf("Figure:\nnr_points: %d\nnr_planes: %d\n", figure->nr_points, figure->nr_planes);
 }
 
-void applyTransformation(Figure* figure, Matrix *matrix) {
+void applyTransformation(Figure *figure, Matrix *matrix) {
     int i;
     for (i = 0; i < figure->nr_points; i++) {
         vector3frefDotMatrix(figure->points + i, matrix);
     }
 }
 
-void exportFigure(Figure* figure, char *filepath) {
+void exportFigure(Figure *figure, char *filepath) {
     FILE *f = fopen(filepath, "w");
-    if (f == NULL)
-    {
+    if (f == NULL) {
         printf("Error opening file!\n");
         exit(1);
     }
@@ -37,7 +36,7 @@ void exportFigure(Figure* figure, char *filepath) {
                 figure->points[point_nr].x,
                 figure->points[point_nr].y,
                 figure->points[point_nr].z
-                );
+        );
     }
 
     int face_nr;
@@ -48,10 +47,141 @@ void exportFigure(Figure* figure, char *filepath) {
                 figure->planes[face_nr].point_indices[1] + 1,
                 figure->planes[face_nr].point_indices[2] + 1,
                 figure->planes[face_nr].point_indices[3] + 1
-                );
+        );
     }
 
     fclose(f);
+}
+
+Figure *importFigure(char *filepath) {
+    Figure *figure = (Figure *) malloc(sizeof(Figure));
+
+    // max line length
+    int bufferLength = 255;
+    char buffer[bufferLength];
+
+    FILE *f = fopen(filepath, "r");
+
+    if (f == NULL) {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    figure->nr_points = 0;
+    figure->nr_planes = 0;
+
+    // count all vertices and faces
+    while (fgets(buffer, bufferLength, f)) {
+        if (buffer[0] == 'v' && buffer[1] == ' ') {
+            figure->nr_points++;
+        }
+
+        if (buffer[0] == 'f' && buffer[1] == ' ') {
+            figure->nr_planes++;
+        }
+    }
+
+    fclose(f);
+
+    figure->points = (Vector3f *) malloc(sizeof(Vector3f) * figure->nr_points);
+    figure->planes = (Plane *) malloc(sizeof(Plane) * figure->nr_planes);
+
+    f = fopen(filepath, "r");
+
+    if (f == NULL) {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    int current_vertex_count = 0;
+    int vertex_component = 0;
+    int current_face_count = 0;
+
+    while (fgets(buffer, bufferLength, f)) {
+        if (buffer[0] == 'v' && buffer[1] == ' ') {
+            vertex_component = 0;
+
+            char *split_buffer;
+            split_buffer = strtok(buffer, " /\n\r");
+            while (split_buffer != NULL) {
+                if (split_buffer[0] == 'v') {
+                    split_buffer = strtok(NULL, " /\n\r");
+                    continue;
+                }
+
+                if (vertex_component == 0) {
+                    figure->points[current_vertex_count].x = strtof(split_buffer, NULL);
+                } else if (vertex_component == 1) {
+                    figure->points[current_vertex_count].y = strtof(split_buffer, NULL);
+                } else if (vertex_component == 2) {
+                    figure->points[current_vertex_count].z = strtof(split_buffer, NULL);
+                    figure->points[current_vertex_count].h = 1;
+                }
+
+                vertex_component++;
+
+                split_buffer = strtok(NULL, " /\n\r");
+            }
+
+            current_vertex_count++;
+        }
+
+        if (buffer[0] == 'f' && buffer[1] == ' ') {
+            char *buffer_cpy = (char *) malloc(sizeof(char) * bufferLength);
+            memcpy(buffer_cpy, buffer, sizeof(char) * bufferLength);
+
+            // count number of vertices in face
+            int fv_count = 0;
+
+            char *split_buffer;
+            split_buffer = strtok(buffer_cpy, " \n\r");
+            while (split_buffer != NULL) {
+                if (split_buffer[0] == 'f') {
+                    split_buffer = strtok(NULL, " \n\r");
+                    continue;
+                }
+
+                fv_count++;
+                split_buffer = strtok(NULL, " \n\r");
+            }
+
+            memcpy(buffer_cpy, buffer, sizeof(char) * bufferLength);
+
+            figure->planes[current_face_count].nr_points = fv_count;
+            figure->planes[current_face_count].point_indices = (int *) malloc(sizeof(int) * fv_count);
+
+            int face_point_index = 0;
+
+            split_buffer = strtok(buffer_cpy, " \n\r");
+            while (split_buffer != NULL) {
+                if (split_buffer[0] == 'f') {
+                    split_buffer = strtok(NULL, " \n\r");
+                    continue;
+                }
+                char *number = (char *) calloc( bufferLength, sizeof(char));
+
+                int i;
+                for (i = 0; i < bufferLength; i++) {
+                    if (split_buffer[i] != '/') {
+                        number[i] = split_buffer[i];
+                    } else {
+                        break;
+                    }
+                }
+
+                figure->planes[current_face_count].point_indices[face_point_index] = atoi(number) - 1;
+
+                face_point_index++;
+
+                split_buffer = strtok(NULL, " \n\r");
+            }
+            current_face_count++;
+        }
+    }
+
+    fclose(f);
+
+    return figure;
 }
 
 Figure *createCube() {

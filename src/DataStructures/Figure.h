@@ -1,9 +1,11 @@
 #ifndef C_TEST_FIGURE_H
 #define C_TEST_FIGURE_H
 
-#include "Matrix.h"
-#include "Plane.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "Plane.h"
+#include "Matrix.h"
 
 typedef struct Figure Figure;
 struct Figure {
@@ -21,6 +23,8 @@ void printFigure(Figure *figure);
 void applyTransformation(Figure* figure, Matrix *matrix);
 
 void exportFigure(Figure* figure, char *filepath);
+
+Figure* importFigure(char *filepath);
 
 Figure *createCube();
 

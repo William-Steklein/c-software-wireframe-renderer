@@ -14,9 +14,27 @@ void run() {
     engine.figures = (Figure *) malloc(sizeof(Figure) * engine.nr_figures);
     engine.transformed_figures = (Figure *) malloc(sizeof(Figure) * engine.nr_figures);
 
-    engine.figures = createCube();
+//    engine.figures = createCube();
+    engine.figures = importFigure("torus.obj");
+//    exportFigure(engine.figures, "torus_exported.obj");
+
+    engine.transMatrix = unityM(4);
+    engine.figure_scale = 3.f;
+
+    Matrix *scale = scaleM(engine.figure_scale);
+    Matrix *rotation = rotateMX(M_PI / 8);
+    engine.transMatrix = matrixDotMatrix(scale, rotation);
+    applyTransformation(engine.figures, engine.transMatrix);
+    destroyMatrix(scale);
+    destroyMatrix(rotation);
+
+
     engine.figure_lines = (Lines2D *) malloc(sizeof(Lines2D) * engine.nr_figures);
     memcpy(engine.transformed_figures, engine.figures, sizeof(Figure) * engine.nr_figures);
+
+//    exportFigure(engine.figures, "cube.obj");
+//    Figure *figure2 = importFigure("cube.obj");
+//    Figure *figure3 = importFigure("torus.obj");
 
     // create deep copy of figures points
     int figure_nr;
@@ -37,11 +55,9 @@ void run() {
     }
     engine.transformed_figures->points->x = 5;
 
-
-
     // Eye point_nr transformation matrix
     Vector3f *eye_point = (Vector3f *) malloc(sizeof(Vector3f));
-    loadVector3f(eye_point, 5, 0, 0, 1);
+    loadVector3f(eye_point, 5.f, 0, 0, 1);
     engine.eyeTransMatrix = eyePointTransM(eye_point);
 
     engine.rotation_angle = 0;
@@ -76,9 +92,10 @@ void mainLoop(SDL_Renderer *renderer) {
         SDL_RenderClear(renderer);
 
         // physics
-        engine.rotation_angle += 0.01f;
+        engine.rotation_angle += 0.025f;
         if (engine.rotation_angle > 2 * M_PI) engine.rotation_angle -= 2 * (float) M_PI;
 
+        destroyMatrix(engine.transMatrix);
         engine.transMatrix = rotateMZ(engine.rotation_angle);
 
         // Draw
@@ -149,7 +166,7 @@ Vector2f *projectCoordinateWorldToWindow(Vector2f *point) {
 
     // linear interpolation of the coordinate
     new_point->x = lerp(0, (float) window_width, alpha_x);
-    new_point->y = lerp(0, (float) window_height, alpha_y);
+    new_point->y = lerp((float) window_height, 0, alpha_y);
 
     return new_point;
 }

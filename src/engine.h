@@ -20,6 +20,7 @@ static int exported = 0;
 typedef struct Engine Engine;
 struct Engine {
     float rotation_angle;
+    float figure_scale;
     Matrix *transMatrix;
     Matrix *eyeTransMatrix;
 
