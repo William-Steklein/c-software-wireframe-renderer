@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include "Matrix.h"
 
 typedef struct Vector3f Vector3f;
 struct Vector3f {
@@ -20,8 +19,6 @@ void printVector3f(Vector3f *vector3f);
 Vector3f *addVector3f(Vector3f *v1, Vector3f *v2);
 
 Vector3f *subVector3f(Vector3f *v1, Vector3f *v2);
-
-Vector3f *vector3fDotMatrix(Vector3f *v, Matrix *m);
 
 float lengthVector3f(Vector3f *v);
 

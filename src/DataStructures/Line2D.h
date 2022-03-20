@@ -24,6 +24,8 @@ void loadLine2D(Line2D *line2d, int p1_index, int p2_index);
 
 void printLine2D(Line2D* line2d, Vector2f *points);
 
+void printLines2D(Lines2D* lines2d);
+
 void loadLines2D(Lines2D *lines2d, int nr_lines, Line2D *lines);
 
 void destroyLines2D(Lines2D *lines2d);

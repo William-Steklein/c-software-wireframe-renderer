@@ -2,13 +2,56 @@
 
 void destroyFigure(Figure *figure) {
     int i;
-    for (i = 0; i < figure->nr_points; i++) {
-        free(figure->points + i);
-    }
+    free(figure->points);
 
     for (i = 0; i < figure->nr_planes; i++) {
         destroyPlane(figure->planes + i);
     }
+    free(figure->planes);
+}
+
+void printFigure(Figure *figure) {
+    printf("Figure:\nnr_points: %d\nnr_planes: %d\n", figure->nr_points, figure->nr_planes);
+}
+
+void applyTransformation(Figure* figure, Matrix *matrix) {
+    int i;
+    for (i = 0; i < figure->nr_points; i++) {
+        vector3frefDotMatrix(figure->points + i, matrix);
+    }
+}
+
+void exportFigure(Figure* figure, char *filepath) {
+    FILE *f = fopen(filepath, "w");
+    if (f == NULL)
+    {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    fprintf(f, "o Figure\n");
+
+    int point_nr;
+    for (point_nr = 0; point_nr < figure->nr_points; point_nr++) {
+        fprintf(f, "v %f %f %f\n",
+                figure->points[point_nr].x,
+                figure->points[point_nr].y,
+                figure->points[point_nr].z
+                );
+    }
+
+    int face_nr;
+    for (face_nr = 0; face_nr < figure->nr_planes; face_nr++) {
+        // todo: rewrite for different kind of faces
+        fprintf(f, "f %d %d %d %d\n",
+                figure->planes[face_nr].point_indices[0] + 1,
+                figure->planes[face_nr].point_indices[1] + 1,
+                figure->planes[face_nr].point_indices[2] + 1,
+                figure->planes[face_nr].point_indices[3] + 1
+                );
+    }
+
+    fclose(f);
 }
 
 Figure *createCube() {

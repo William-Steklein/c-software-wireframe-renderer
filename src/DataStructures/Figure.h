@@ -1,7 +1,7 @@
 #ifndef C_TEST_FIGURE_H
 #define C_TEST_FIGURE_H
 
-#include "Vector3f.h"
+#include "Matrix.h"
 #include "Plane.h"
 #include <stdlib.h>
 
@@ -14,13 +14,13 @@ struct Figure {
     Plane *planes;
 };
 
-typedef struct Figures Figures;
-struct Figures {
-    int nr_figures;
-    Figure *figures;
-};
-
 void destroyFigure(Figure *figure);
+
+void printFigure(Figure *figure);
+
+void applyTransformation(Figure* figure, Matrix *matrix);
+
+void exportFigure(Figure* figure, char *filepath);
 
 Figure *createCube();
 

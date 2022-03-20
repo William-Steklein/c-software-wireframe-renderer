@@ -38,25 +38,6 @@ Vector3f *subVector3f(Vector3f *v1, Vector3f *v2) {
     return result;
 }
 
-Vector3f *vector3fDotMatrix(Vector3f *v, Matrix *m) {
-    // Check if it is possible to multiply
-    if (4 != m->nr_rows)
-        return NULL;
-
-    int arr_len = 4;
-    Vector3f *result = (Vector3f *) calloc(1, sizeof(Vector3f));
-
-    int i;
-    for (i = 0; i < arr_len; i++) {
-        result->x += v->x * m->arr[i][0];
-        result->y += v->y * m->arr[i][1];
-        result->z += v->z * m->arr[i][2];
-        result->h += v->h * m->arr[i][3];
-    }
-
-    return result;
-}
-
 float lengthVector3f(Vector3f *v) {
     return sqrtf(powf(v->x, 2) + powf(v->y, 2) + powf(v->z, 2));
 }

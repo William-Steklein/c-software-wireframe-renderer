@@ -13,6 +13,14 @@ void printLine2D(Line2D* line2d, Vector2f *points) {
     printf("|\n");
 }
 
+void printLines2D(Lines2D* lines2d) {
+//    int line;
+//    for (line = 0; line < lines2d->nr_lines; line++) {
+//        printLine2D(lines2d->lines + line, lines2d->points);
+//    }
+    printf("nr_points: %d, nr_lines: %d\n", lines2d->nr_points, lines2d->nr_lines);
+}
+
 void loadLines2D(Lines2D *lines2d, int nr_lines, Line2D *lines) {
     lines2d->nr_lines = nr_lines;
     lines2d->lines = lines;
