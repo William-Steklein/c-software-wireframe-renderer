@@ -5,6 +5,6 @@
 
 float lerp(float x0, float x1, float alpha);
 
-void toPolar(const Vector3f *point, float *theta, float *phi, float *r);
+void toPolar(Vector3f *point, float *theta, float *phi, float *r);
 
 #endif //C_TEST_UTILS_H

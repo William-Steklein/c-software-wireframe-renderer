@@ -2,6 +2,7 @@
 #define C_TEST_VECTOR3F_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 
 typedef struct Vector3f Vector3f;

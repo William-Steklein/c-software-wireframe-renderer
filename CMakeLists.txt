@@ -4,7 +4,6 @@ project(${PROJECT_NAME} C)
 
 set(CMAKE_C_STANDARD 99)
 
-
 find_package(SDL2 REQUIRED)
 include_directories(C_test ${SDL2_INCLUDE_DIRS})
 
@@ -27,4 +26,4 @@ add_executable(${PROJECT_NAME}
         src/DataStructures/Vector3f.c
         src/DataStructures/Matrix.c
         )
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} -lm ${SDL2_LIBRARIES})
