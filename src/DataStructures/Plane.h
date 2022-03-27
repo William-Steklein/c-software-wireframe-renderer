@@ -1,8 +1,9 @@
-#ifndef C_TEST_PLANE_H
-#define C_TEST_PLANE_H
+#ifndef SIMPLE_C_GRAPHICS_ENGINE_PLANE_H
+#define SIMPLE_C_GRAPHICS_ENGINE_PLANE_H
 
 #include <stdlib.h>
-#include "Vector3f.h"
+#include <string.h>
+#include "Vector3Df.h"
 
 typedef struct Plane Plane;
 struct Plane {
@@ -10,8 +11,10 @@ struct Plane {
     int *point_indices;
 };
 
-void loadPlane(Plane *plane, int nr_points, int *point_indices);
+void plane_load(Plane *plane, int nr_points, int *point_indices);
 
-void destroyPlane(Plane *plane);
+void plane_deep_copy(Plane *source, Plane *shallow_copy);
 
-#endif //C_TEST_PLANE_H
+void plane_destroy(Plane *plane);
+
+#endif //SIMPLE_C_GRAPHICS_ENGINE_PLANE_H

@@ -1,9 +1,9 @@
-#ifndef C_TEST_LINE2D_H
-#define C_TEST_LINE2D_H
+#ifndef SIMPLE_C_GRAPHICS_ENGINE_LINE2D_H
+#define SIMPLE_C_GRAPHICS_ENGINE_LINE2D_H
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "Vector2f.h"
+#include "Vector2Df.h"
 
 typedef struct Line2D Line2D;
 struct Line2D {
@@ -11,25 +11,25 @@ struct Line2D {
     int p2_index;
 };
 
+void line2d_load(Line2D *line2d, int p1_index, int p2_index);
+
+void line2d_print(Line2D* line2d, Vector2Df *points);
+
 typedef struct Lines2D Lines2D;
 struct Lines2D {
     int nr_points;
-    Vector2f *points;
+    Vector2Df *points;
 
     int nr_lines;
     Line2D *lines;
 };
 
-void loadLine2D(Line2D *line2d, int p1_index, int p2_index);
+void lines2d_load(Lines2D *lines2d, int nr_lines, Line2D *lines);
 
-void printLine2D(Line2D* line2d, Vector2f *points);
+void lines2d_print(Lines2D* lines2d);
 
-void printLines2D(Lines2D* lines2d);
+void lines2d_destroy(Lines2D *lines2d);
 
-void loadLines2D(Lines2D *lines2d, int nr_lines, Line2D *lines);
+Lines2D *lines2d_create_rectangle();
 
-void destroyLines2D(Lines2D *lines2d);
-
-Lines2D *createRectangle();
-
-#endif //C_TEST_LINE2D_H
+#endif //SIMPLE_C_GRAPHICS_ENGINE_LINE2D_H

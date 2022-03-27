@@ -5,27 +5,23 @@
 #include "utils/utils.h"
 #include "DataStructures/Line2D.h"
 #include "DataStructures/Figure.h"
+#include "DataStructures/Matrix.h"
+#include "Renderer.h"
 
-static const int window_width = 1024;
-static const int window_height = 1024;
-
-static const float x_min = -1;
-static const float x_max = 1;
-static const float y_min = -1;
-static const float y_max = 1;
-
-static int exported = 0;
-
-// todo: expand & refactor engine struct
 typedef struct Engine Engine;
 struct Engine {
-    float rotation_angle;
-    float figure_scale;
-    Matrix *transMatrix;
+    Renderer *renderer;
+
+    float world_view_x_min;
+    float world_view_x_max;
+    float world_view_y_min;
+    float world_view_y_max;
+
     Matrix *eyeTransMatrix;
 
     int nr_figures;
     Figure *figures;
+
     Figure *transformed_figures;
 
     Lines2D *figure_lines;
@@ -33,20 +29,20 @@ struct Engine {
 
 static Engine engine;
 
-void run();
+void engine_run();
 
-void mainLoop(SDL_Renderer *renderer);
+void engine_setup();
 
-void draw(SDL_Renderer *renderer);
+void engine_destroy();
 
-void draw2DLine(SDL_Renderer *renderer, Line2D *line2d, Vector2f *points);
+void engine_main_loop();
 
-void drawLines(SDL_Renderer *renderer);
+void engine_draw();
 
-void draw2DLines(SDL_Renderer *renderer, Lines2D *lines2d);
+void engine_draw_lines2d();
 
-Vector2f *projectCoordinateWorldToWindow(Vector2f *point);
+void engine_project_figures();
 
-void projectFigures();
+void engine_project_vector2df_ref_viewport(Vector2Df *point);
 
 #endif //C_TEST_ENGINE_H

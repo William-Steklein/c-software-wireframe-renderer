@@ -1,82 +1,78 @@
 #include "engine.h"
 
-void run() {
-    // SDL
-    SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window *window = SDL_CreateWindow("Simple C Graphics Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                          window_width,
-                                          window_height, SDL_WINDOW_OPENGL);
+void engine_run() {
+    engine_setup();
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    engine_main_loop();
 
-    // Load figures
+    engine_destroy();
+}
+
+void engine_setup() {
+    // renderer
+    engine.renderer = renderer_create(1024, 1024);
+
+    // world
+    engine.world_view_x_min = -1;
+    engine.world_view_x_max = 1;
+    engine.world_view_y_min = -1;
+    engine.world_view_y_max = 1;
+
+    // load figures
     engine.nr_figures = 1;
     engine.figures = (Figure *) malloc(sizeof(Figure) * engine.nr_figures);
     engine.transformed_figures = (Figure *) malloc(sizeof(Figure) * engine.nr_figures);
 
-//    engine.figures = createCube();
-    engine.figures = importFigure("torus.obj");
-//    exportFigure(engine.figures, "torus_exported.obj");
-
-    engine.transMatrix = unityM(4);
-    engine.figure_scale = 3.f;
-
-    Matrix *scale = scaleM(engine.figure_scale);
-    Matrix *rotation = rotateMX(M_PI / 8);
-    engine.transMatrix = matrixDotMatrix(scale, rotation);
-    applyTransformation(engine.figures, engine.transMatrix);
-    destroyMatrix(scale);
-    destroyMatrix(rotation);
-
+    engine.figures = figure_import("torus.obj");
+//    engine.figures = figure_create_cube();
 
     engine.figure_lines = (Lines2D *) malloc(sizeof(Lines2D) * engine.nr_figures);
     memcpy(engine.transformed_figures, engine.figures, sizeof(Figure) * engine.nr_figures);
 
-//    exportFigure(engine.figures, "cube.obj");
-//    Figure *figure2 = importFigure("cube.obj");
-//    Figure *figure3 = importFigure("torus.obj");
-
-    // create deep copy of figures points
-    int figure_nr;
-    for (figure_nr = 0; figure_nr < engine.nr_figures; figure_nr++) {
+    for (int figure_nr = 0; figure_nr < engine.nr_figures; figure_nr++) {
         Figure *figure = engine.figures + figure_nr;
         Figure *trans_figure = engine.transformed_figures + figure_nr;
-        trans_figure->points = (Vector3f *) malloc(sizeof(Vector3f) * trans_figure->nr_points);
-        memcpy(trans_figure->points, figure->points, sizeof(Vector3f) * trans_figure->nr_points);
 
+        // create a deep copy of the figures
+        trans_figure->points = (Vector3Df *) malloc(sizeof(Vector3Df) * trans_figure->nr_points);
+        memcpy(trans_figure->points, figure->points, sizeof(Vector3Df) * trans_figure->nr_points);
+//        figure_deep_copy(figure, trans_figure);
+
+        // create empty instance of lines for this figure
         Lines2D *lines = engine.figure_lines + figure_nr;
 
         lines->nr_points = figure->nr_points;
-        lines->points = (Vector2f *) malloc(sizeof(Vector2f) * lines->nr_points);
+        lines->points = (Vector2Df *) malloc(sizeof(Vector2Df) * lines->nr_points);
 
         lines->nr_lines =
-                figure->planes->nr_points * figure->nr_planes;    // assuming all planes have same nr of points
+                figure->planes->nr_points * figure->nr_planes;    // assuming all planes have same nr of points todo
         lines->lines = (Line2D *) malloc(sizeof(Line2D) * lines->nr_lines);
     }
-    engine.transformed_figures->points->x = 5;
 
-    // Eye point_nr transformation matrix
-    Vector3f *eye_point = (Vector3f *) malloc(sizeof(Vector3f));
-    loadVector3f(eye_point, 5.f, 0, 0, 1);
-    engine.eyeTransMatrix = eyePointTransM(eye_point);
-
-    engine.rotation_angle = 0;
-
-    // Main loop
-    mainLoop(renderer);
-
-    // Release resources
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-
-    int i;
-    for (i = 0; i < engine.nr_figures; i++) {
-        destroyFigure(engine.figures + i);
-    }
+    // eye point_nr transformation matrix
+    Vector3Df *eye_point = (Vector3Df *) malloc(sizeof(Vector3Df));
+    vector3df_load(eye_point, 5.f, 0, 0, 1);
+    engine.eyeTransMatrix = matrix_create_eye_point_trans(eye_point);
 }
 
-void mainLoop(SDL_Renderer *renderer) {
+void engine_destroy() {
+    renderer_destroy(engine.renderer);
+    free(engine.renderer);
+
+    matrix_destroy(engine.eyeTransMatrix);
+    free(engine.eyeTransMatrix);
+
+    for (int i = 0; i < engine.nr_figures; i++) {
+        figure_destroy(engine.figures + i);
+
+        free(engine.transformed_figures[i].points);
+//        figure_destroy(engine.transformed_figures + i);
+    }
+    free(engine.figures);
+    free(engine.transformed_figures);
+}
+
+void engine_main_loop() {
     int running = 1;
     SDL_Event event;
     while (running) {
@@ -87,91 +83,49 @@ void mainLoop(SDL_Renderer *renderer) {
             }
         }
 
-        // Clear screen
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
+        // clear
+        renderer_clear(engine.renderer);
 
-        // physics
-        engine.rotation_angle += 0.025f;
-        if (engine.rotation_angle > 2 * M_PI) engine.rotation_angle -= 2 * (float) M_PI;
+        // draw
+        engine_draw();
 
-        destroyMatrix(engine.transMatrix);
-        engine.transMatrix = rotateMZ(engine.rotation_angle);
-
-        // Draw
-        draw(renderer);
-
-        // Show what was drawn
-        SDL_RenderPresent(renderer);
+        // show
+        renderer_show(engine.renderer);
     }
 }
 
-void draw(SDL_Renderer *renderer) {
+void engine_draw() {
     // copy figure points and apply transformations
     int figure_nr;
     for (figure_nr = 0; figure_nr < engine.nr_figures; figure_nr++) {
         Figure *figure = engine.figures + figure_nr;
         Figure *trans_figure = engine.transformed_figures + figure_nr;
 
-        memcpy(trans_figure->points, figure->points, sizeof(Vector3f) * trans_figure->nr_points);
+        memcpy(trans_figure->points, figure->points, sizeof(Vector3Df) * trans_figure->nr_points);
 
-        applyTransformation(trans_figure, engine.transMatrix);
-        applyTransformation(trans_figure, engine.eyeTransMatrix);
+        figure_apply_transformation(trans_figure, engine.eyeTransMatrix);
     }
 
-    projectFigures();
-    drawLines(renderer);
+    engine_project_figures();
+    engine_draw_lines2d();
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "DanglingPointer"
-
-void draw2DLine(SDL_Renderer *renderer, Line2D *line2d, Vector2f *points) {
-    Vector2f *p1 = projectCoordinateWorldToWindow(points + line2d->p1_index);
-    Vector2f *p2 = projectCoordinateWorldToWindow(points + line2d->p2_index);
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer, (int) floorf(p1->x), (int) floorf(p1->y), (int) floorf(p2->x), (int) floorf(p2->y));
-
-    free(p1);
-    free(p2);
-}
-
-#pragma clang diagnostic pop
-
-void drawLines(SDL_Renderer *renderer) {
+void engine_draw_lines2d() {
     int i, line;
     for (i = 0; i < engine.nr_figures; i++) {
         Lines2D *figure_lines = engine.figure_lines + i;
 
         for (line = 0; line < figure_lines->nr_lines; line++) {
-            draw2DLine(renderer, figure_lines->lines + line, figure_lines->points);
+            Vector2Df *p1 = figure_lines->points + (figure_lines->lines + line)->p1_index;
+            Vector2Df *p2 = figure_lines->points + (figure_lines->lines + line)->p2_index;
+
+            renderer_draw_line(engine.renderer, (int) floorf(p1->x), (int) floorf(p1->y), (int) floorf(p2->x),
+                               (int) floorf(p2->y));
         }
     }
 }
 
-void draw2DLines(SDL_Renderer *renderer, Lines2D *lines2d) {
-    int i;
-    for (i = 0; i < lines2d->nr_lines; i++) {
-        draw2DLine(renderer, lines2d->lines + i, lines2d->points);
-    }
-}
-
-Vector2f *projectCoordinateWorldToWindow(Vector2f *point) {
-    Vector2f *new_point = (Vector2f *) malloc(sizeof(Vector2f));
-
-    // calculate alpha value
-    float alpha_x = (point->x - x_min) / (x_max - x_min);
-    float alpha_y = (point->y - y_min) / (y_max - y_min);
-
-    // linear interpolation of the coordinate
-    new_point->x = lerp(0, (float) window_width, alpha_x);
-    new_point->y = lerp((float) window_height, 0, alpha_y);
-
-    return new_point;
-}
-
-void projectFigures() {
+void engine_project_figures() {
     int i, j, k, point;
 
     float d = 1;
@@ -183,9 +137,13 @@ void projectFigures() {
 
         // project all points
         for (point = 0; point < figure->nr_points; point++) {
-            Vector3f *f_point = figure->points + point;
+            // projects to world view
+            Vector3Df *f_point = figure->points + point;
             lines->points[point].x = (d * f_point->x) / (-f_point->z);
             lines->points[point].y = (d * f_point->y) / (-f_point->z);
+
+            // projects to view frame
+            engine_project_vector2df_ref_viewport(lines->points + point);
         }
 
         // planes
@@ -202,4 +160,17 @@ void projectFigures() {
             }
         }
     }
+}
+
+void engine_project_vector2df_ref_viewport(Vector2Df *point) {
+    // calculate alpha value
+    float alpha_x = (point->x - engine.world_view_x_min) / (engine.world_view_x_max - engine.world_view_x_min);
+    float alpha_y = (point->y - engine.world_view_y_min) / (engine.world_view_y_max - engine.world_view_y_min);
+
+    // linear interpolation of the coordinate
+    float new_x = lerp(0, (float) engine.renderer->viewport_width, alpha_x);
+    float new_y = lerp((float) engine.renderer->viewport_height, 0, alpha_y);
+
+    point->x = new_x;
+    point->y = new_y;
 }

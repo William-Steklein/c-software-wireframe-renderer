@@ -1,5 +1,5 @@
-#ifndef C_TEST_FIGURE_H
-#define C_TEST_FIGURE_H
+#ifndef SIMPLE_C_GRAPHICS_ENGINE_FIGURE_H
+#define SIMPLE_C_GRAPHICS_ENGINE_FIGURE_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,23 +10,27 @@
 typedef struct Figure Figure;
 struct Figure {
     int nr_points;
-    Vector3f *points;
+    Vector3Df *points;
 
     int nr_planes;
     Plane *planes;
+
+    Matrix *model_matrix;
 };
 
-void destroyFigure(Figure *figure);
+void figure_deep_copy(Figure *source, Figure *shallow_copy);
 
-void printFigure(Figure *figure);
+void figure_destroy(Figure *figure);
 
-void applyTransformation(Figure* figure, Matrix *matrix);
+void figure_print(Figure *figure);
 
-void exportFigure(Figure* figure, char *filepath);
+void figure_export(Figure* figure, char *filepath);
 
-Figure* importFigure(char *filepath);
+Figure* figure_import(char *filepath);
 
-Figure *createCube();
+Figure *figure_create_cube();
+
+void figure_apply_transformation(Figure* figure, Matrix *matrix);
 
 
-#endif //C_TEST_FIGURE_H
+#endif //SIMPLE_C_GRAPHICS_ENGINE_FIGURE_H
