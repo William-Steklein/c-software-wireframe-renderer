@@ -10,8 +10,8 @@ include_directories(C_test ${SDL2_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}
         src/main.c
-        src/Engine.c
-        src/Engine.h
+        src/engine.c
+        src/engine.h
         src/DataStructures/Vector2Df.h
         src/DataStructures/Figure.h
         src/DataStructures/Plane.h
@@ -27,4 +27,5 @@ add_executable(${PROJECT_NAME}
         src/DataStructures/Vector3Df.c
         src/DataStructures/Matrix.c
         src/Renderer.c src/Renderer.h)
+
 target_link_libraries(${PROJECT_NAME} -lm ${SDL2_LIBRARIES})

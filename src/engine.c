@@ -53,6 +53,7 @@ void engine_setup() {
     Vector3Df *eye_point = (Vector3Df *) malloc(sizeof(Vector3Df));
     vector3df_load(eye_point, 5.f, 0, 0, 1);
     engine.eyeTransMatrix = matrix_create_eye_point_trans(eye_point);
+    free(eye_point);
 }
 
 void engine_destroy() {
